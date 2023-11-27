@@ -1,6 +1,8 @@
 import os
 import requests
 from bs4 import BeautifulSoup
+from PIL import Image
+from io import BytesIO
 
 Google_Image = 'https://www.google.com/search?site=&tbm=isch&source=hp&biw=1873&bih=990&'
 u_agnt = {
@@ -49,8 +51,16 @@ def download_images(data, num_images, folder_name):
 
     for i, imagelink in enumerate(imagelinks):
         response = requests.get(imagelink)
-        
-        imagename = os.path.join(folder_name, f'{data}_{i+1}.jpg')
+
+        try:
+            # Use PIL to open the image and extract the format
+            img = Image.open(BytesIO(response.content))
+            file_extension = img.format.lower()
+        except Exception as e:
+            print(f"Error determining image format: {e}")
+            file_extension = 'jpg'
+
+        imagename = os.path.join(folder_name, f'{data}_{i+1}.{file_extension}')
         with open(imagename, 'wb') as file:
             file.write(response.content)
 
